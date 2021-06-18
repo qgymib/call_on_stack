@@ -64,5 +64,5 @@ call_on_stack_asm:
     br      r20                     /* longjmp(jmpbuf, 1) */
 
 #else
-#	error	"unsupport platform"
+#   error	"unsupport platform"
 #endif
