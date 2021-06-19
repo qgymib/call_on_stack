@@ -14,7 +14,7 @@ call_on_stack__asm:
     add     $4,         %esp
     push    $1                      /* build argument:1 */
     push    %esi                    /* build argument:jmp_buf */
-    call    *%esi
+    call    *%edi
 
 #elif defined(__x86_64__)
 
