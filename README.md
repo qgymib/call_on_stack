@@ -18,10 +18,15 @@ This code malloc a block of memory in one stack, and free it in another stack.
 ## Support architecture
 
 Currently support following architectures:
-+ i386
-+ x86_64
-+ arm
-+ aarch64
+
+|         | clang | gcc  | msvc |
+| ------- | ----- | ---- | ---- |
+| i386    | YES   | YES  | YES  |
+| x86_64  | YES   | YES  | YES  |
+| arm     |       |      |      |
+| aarch64 |       |      |      |
+
+
 
 ## How it works
 
