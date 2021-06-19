@@ -28,4 +28,5 @@ int main(int argc, char* argv[])
     assert((uintptr_t)addr < (uintptr_t)buffer + buffer_size);
 
     free(buffer);
+    return 0;
 }

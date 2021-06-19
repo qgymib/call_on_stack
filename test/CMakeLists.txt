@@ -6,6 +6,11 @@ get_target_property(TEST_PROJECT_INCLUDES call_on_stack INCLUDE_DIRECTORIES)
 function(CUSTOM_ADD_TEST name)
 	add_executable(${name} ${name}.c)
 	target_link_libraries(${name} PRIVATE call_on_stack)
+	if (CMAKE_C_COMPILE_ID STREQUAL "MSVC")
+		target_compile_options(${name} PRIVATE /W4 /WX)
+	else ()
+		target_compile_options(${name} PRIVATE -Wall -Wextra -Werror)
+	endif ()
 	target_include_directories(${name}
 		PRIVATE
 			${TEST_PROJECT_INCLUDES}
@@ -14,3 +19,4 @@ function(CUSTOM_ADD_TEST name)
 endfunction()
 
 CUSTOM_ADD_TEST(check_address)
+CUSTOM_ADD_TEST(check_setjmp)
