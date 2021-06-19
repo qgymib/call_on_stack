@@ -13,11 +13,11 @@ if (CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
 elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     enable_language(ASM_MASM)
     if (CMAKE_SIZEOF_VOID_P EQUAL 4)
-        target_sources(${PROJECT_NAME} PRIVATE src/call_on_stack-msvc-i386.asm)
-        set_property(SOURCE src/call_on_stack-msvc-i386.asm
+        target_sources(${PROJECT_NAME} PRIVATE src/call_on_stack-msvc-win32.asm)
+        set_property(SOURCE src/call_on_stack-msvc-win32.asm
             APPEND PROPERTY COMPILE_OPTIONS "/safeseh")
     else ()
-        target_sources(${PROJECT_NAME} PRIVATE src/call_on_stack-msvc-x86_64.asm)
+        target_sources(${PROJECT_NAME} PRIVATE src/call_on_stack-msvc-win64.asm)
     endif ()
     set_property(SOURCE src/call_on_stack.c
         APPEND PROPERTY COMPILE_OPTIONS "/W4" "/WX")
