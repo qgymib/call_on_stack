@@ -8,6 +8,14 @@
 
 #define STACK_ALIGN_SIZE (sizeof(void*) * 2)
 
+#if defined(_WIN64)
+    int call_on_stack__asm_setjmp(jmp_buf env);
+#   define call_on_stack__asm_longjmp  longjmp
+#else
+#   define call_on_stack__asm_setjmp   setjmp
+#   define call_on_stack__asm_longjmp  longjmp
+#endif
+
 /**
  * @brief Call `func(arg)` in stack and jump back to `orig`
  * @param[in] orig      Jumpback address
@@ -16,7 +24,7 @@
  * @param[in] func      User defined function
  * @param[in] arg       User defined argument
  */
-void call_on_stack_asm(jmp_buf orig, void (*longjmp)(jmp_buf, int),
+void call_on_stack__asm(jmp_buf orig, void (*longjmp)(jmp_buf, int),
     void* baseaddr, void (*func)(void* arg), void* arg);
 
 void call_on_stack(void* stack, size_t size, void (*func)(void* arg), void* arg)
@@ -25,7 +33,7 @@ void call_on_stack(void* stack, size_t size, void (*func)(void* arg), void* arg)
 
     /* Save registers */
     jmp_buf buf;
-    if (setjmp(buf) != 0)
+    if (call_on_stack__asm_setjmp(buf) != 0)
     {
         return;
     }
@@ -38,9 +46,9 @@ void call_on_stack(void* stack, size_t size, void (*func)(void* arg), void* arg)
     void* align_addr = (void*)ALIGN_SIZE(base_addr, STACK_ALIGN_SIZE);
     if (base_addr != align_addr)
     {
-        base_addr = align_addr - STACK_ALIGN_SIZE;
+        base_addr = (void*)((uintptr_t)align_addr - STACK_ALIGN_SIZE);
     }
 
     /* Switch stack and call function */
-    call_on_stack_asm(buf, longjmp, base_addr, func, arg);
+    call_on_stack__asm(buf, call_on_stack__asm_longjmp, base_addr, func, arg);
 }
