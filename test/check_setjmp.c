@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     (void)argc; (void)argv;
 
     /* use valgrind to detect memory error */
-    const size_t buffer_size = 1024;
+    const size_t buffer_size = 24 * 1024;
     buffer = malloc(buffer_size);
 
     jmp_buf buf;

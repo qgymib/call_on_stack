@@ -8,7 +8,7 @@ Check out this example:
 
 ```
 #include "call_on_stack.h"
-static char buffer[1024];
+static char buffer[24 * 1024];
 void* p = malloc(1);
 call_on_stack(buffer, sizeof(buffer), free, p);
 ```
