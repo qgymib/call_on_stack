@@ -171,3 +171,51 @@ jobs:
           cd /workspace && CC=clang cmake -B /workspace/build-unix-gcc-aarch64 -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
           cd /workspace && cmake --build /workspace/build-unix-gcc-aarch64 --config ${BUILD_TYPE}
           cd /workspace/build-unix-gcc-aarch64 && ctest -C ${BUILD_TYPE}
+
+  unix-gcc-armv7:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: uraimo/run-on-arch-action@v2.0.10
+      name: Build & Test
+      with:
+        arch: armv7
+        distro: fedora_latest
+        githubToken: ${{ github.token }}
+        dockerRunArgs: |
+          --volume "${{github.workspace}}:/workspace"
+        env: |
+          BUILD_TYPE: ${{env.BUILD_TYPE}}
+        install: |
+          yum update -y
+          yum install -y gcc gcc-c++ cmake
+        run: |
+          cd /workspace && cmake -B /workspace/build-unix-gcc-armv7 -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+          cd /workspace && cmake --build /workspace/build-unix-gcc-armv7 --config ${BUILD_TYPE}
+          cd /workspace/build-unix-gcc-armv7 && ctest -C ${BUILD_TYPE}
+
+  unix-clang-armv7:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: uraimo/run-on-arch-action@v2.0.10
+      name: Build & Test
+      with:
+        arch: armv7
+        distro: fedora_latest
+        githubToken: ${{ github.token }}
+        dockerRunArgs: |
+          --volume "${{github.workspace}}:/workspace"
+        env: |
+          BUILD_TYPE: ${{env.BUILD_TYPE}}
+        install: |
+          yum update -y
+          yum install -y clang cmake
+        run: |
+          cd /workspace && CC=clang cmake -B /workspace/build-unix-clang-armv7 -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+          cd /workspace && cmake --build /workspace/build-unix-clang-armv7 --config ${BUILD_TYPE}
+          cd /workspace/build-unix-clang-armv7 && ctest -C ${BUILD_TYPE}

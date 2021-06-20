@@ -23,7 +23,7 @@ Currently support following architectures:
 | ------- | ----- | ---- | ---- |
 | i386    | YES   | YES  | YES  |
 | x86_64  | YES   | YES  | YES  |
-| arm     |       |      |      |
+| armv7   | YES   | YES  |      |
 | aarch64 | YES   | YES  |      |
 
 
