@@ -24,8 +24,7 @@ Currently support following architectures:
 | i386    | YES   | YES  | YES  |
 | x86_64  | YES   | YES  | YES  |
 | arm     |       |      |      |
-| aarch64 |       |      |      |
-
+| aarch64 | YES   | YES  |      |
 
 
 ## How it works

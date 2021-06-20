@@ -51,14 +51,14 @@ call_on_stack__asm:
 .global call_on_stack__asm
 .type call_on_stack__asm,@function
 call_on_stack__asm:
-    mov     r19,        r0          /* save jmpbuf */
-    mov     r20,        r1          /* save longjmp() function pointer */
-    mov     sp,         r2          /* set stack pointer */
-    mov     r0,         r4          /* build argument: arg */
-    blr     r3                      /* func(arg) */
-    mov     r0,         r19         /* build argument: jmpbuf */
-    mov     r1,         1           /* build argument:  1 */
-    br      r20                     /* longjmp(jmpbuf, 1) */
+    mov     x19,        x0          /* save jmpbuf */
+    mov     x20,        x1          /* save longjmp() function pointer */
+    mov     sp,         x2          /* set stack pointer */
+    mov     x0,         x4          /* build argument: arg */
+    blr     x3                      /* func(arg) */
+    mov     x0,         x19         /* build argument: jmpbuf */
+    mov     x1,         1           /* build argument:  1 */
+    br      x20                     /* longjmp(jmpbuf, 1) */
 
 #else
 #   error	"unsupport platform"
