@@ -8,6 +8,9 @@
 
 #define STACK_ALIGN_SIZE (sizeof(void*) * 2)
 
+#define JMP_POINT(stack, size)  \
+    ((void*)((char*)ALIGN_SIZE((char*)stack + size - sizeof(jmp_buf), STACK_ALIGN_SIZE) - STACK_ALIGN_SIZE))
+
 #if defined(_WIN64)
     int call_on_stack__asm_setjmp(jmp_buf env);
 #   define call_on_stack__asm_longjmp  longjmp
@@ -28,30 +31,16 @@
  * @param[in] arg       User defined argument
  */
 void call_on_stack__asm(jmp_buf orig, void (*longjmp)(jmp_buf, int),
-    void* baseaddr, void (*func)(void* arg), void* arg);
+    void (*func)(void* arg), void* arg);
 
 void call_on_stack(void* stack, size_t size, void (*func)(void* arg), void* arg)
 {
-    assert(size > STACK_ALIGN_SIZE * 2);
-
     /* Save registers */
-    jmp_buf buf;
-    if (call_on_stack__asm_setjmp(buf) != 0)
+    if (call_on_stack__asm_setjmp(JMP_POINT(stack, size)) != 0)
     {
         return;
     }
 
-    /**
-     * Calculate stack base address
-     * The stack address must align to ensure meet PCS requirements
-     */
-    void* base_addr = (char*)stack + size;
-    void* align_addr = (void*)ALIGN_SIZE(base_addr, STACK_ALIGN_SIZE);
-    if (base_addr != align_addr)
-    {
-        base_addr = (void*)((uintptr_t)align_addr - STACK_ALIGN_SIZE);
-    }
-
     /* Switch stack and call function */
-    call_on_stack__asm(buf, call_on_stack__asm_longjmp, base_addr, func, arg);
+    call_on_stack__asm(JMP_POINT(stack, size), call_on_stack__asm_longjmp, func, arg);
 }

@@ -34,7 +34,6 @@ int main(int argc, char* argv[])
 {
     (void)argc; (void)argv;
 
-    
     buffer1 = malloc(stack_size);
     buffer2 = malloc(stack_size);
 

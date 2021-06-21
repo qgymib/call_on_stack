@@ -5,9 +5,10 @@ _call_on_stack__asm   PROC
     mov     ebp,    esp
     mov     esi,    DWORD PTR 8[ebp]      ; save jmpbuf
     mov     edi,    DWORD PTR 12[ebp]     ; save longjmp() function pointer
-    mov     eax,    DWORD PTR 20[ebp]     ; get user function
-    mov     ecx,    DWORD PTR 24[ebp]     ; get user argument
-    mov     esp,    DWORD PTR 16[ebp]     ; set stack pointer
+    mov     eax,    DWORD PTR 16[ebp]     ; get user function
+    mov     ecx,    DWORD PTR 20[ebp]     ; get user argument
+    mov     esp,    esi                 ; set stack pointer
+    sub     esp,    4h
     push    ecx
     call    eax
     add     esp,    4h

@@ -2,15 +2,16 @@ _TEXT SEGMENT
 
 call_on_stack__asm   PROC FRAME
     .endprolog
+    ; https://docs.microsoft.com/en-us/cpp/build/x64-calling-convention
     mov     r12,    rcx                 ; save jmp_buf
     mov     r13,    rdx                 ; save longjmp() function pointer
-    mov     rcx,    QWORD PTR 40[rsp]   ; build argument:arg
-    mov     rsp,    r8                  ; set stack pointer
+    mov     rsp,    rcx                 ; set stack pointer
     ; Accroding to https://docs.microsoft.com/en-us/cpp/build/stack-usage#stack-allocation,
     ; there is a `register parameter stack area` at the bottom of stack frame.
     ; To simulate it, we leave 40 bytes empty space on this stack.
-    sub     rsp,    40
-    call    r9                          ; func(arg)
+    sub     rsp,    48
+    mov     rcx,    r9
+    call    r8                          ; func(arg)
     mov     rcx,    r12                 ; build argument:jmp_buf
     mov     rdx,    1                   ; build argument:1
     call    r13                         ; longjmp(jmp_buf, 1)
