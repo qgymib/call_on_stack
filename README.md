@@ -1,5 +1,8 @@
 # call_on_stack
 
+![CMake](https://github.com/qgymib/call_on_stack/actions/workflows/cmake.yml/badge.svg)
+![CodeQL](https://github.com/qgymib/call_on_stack/actions/workflows/codeql-analysis.yml/badge.svg)
+
 Call a function on an independent stack.
 
 ## How to use
