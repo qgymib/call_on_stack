@@ -6,9 +6,9 @@ add_library(${PROJECT_NAME}
 
 if (CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
     enable_language(ASM)
-    set_property(SOURCE src/call_on_stack-clang-gcc.s
+    set_property(SOURCE src/call_on_stack-clang-gcc.S
         APPEND PROPERTY COMPILE_OPTIONS "-x" "assembler-with-cpp")
-    target_sources(${PROJECT_NAME} PRIVATE src/call_on_stack-clang-gcc.s)
+    target_sources(${PROJECT_NAME} PRIVATE src/call_on_stack-clang-gcc.S)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Werror)
 elseif (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
     enable_language(ASM_MASM)
