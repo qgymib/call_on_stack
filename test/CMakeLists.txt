@@ -19,4 +19,6 @@ function(CUSTOM_ADD_TEST name)
 endfunction()
 
 CUSTOM_ADD_TEST(check_address)
+CUSTOM_ADD_TEST(check_chain_call)
 CUSTOM_ADD_TEST(check_setjmp)
+CUSTOM_ADD_TEST(check_skip_jump)
