@@ -11,9 +11,12 @@
 #if defined(_WIN64)
     int call_on_stack__asm_setjmp(jmp_buf env);
 #   define call_on_stack__asm_longjmp  longjmp
-#else
+#elif defined(_WIN32)
 #   define call_on_stack__asm_setjmp   setjmp
 #   define call_on_stack__asm_longjmp  longjmp
+#else
+#   define call_on_stack__asm_setjmp   _setjmp
+#   define call_on_stack__asm_longjmp  _longjmp
 #endif
 
 /**
