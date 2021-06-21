@@ -5,26 +5,18 @@
 #include "call_on_stack.h"
 
 #if defined(_WIN64)
-
-/**
- * @warning This test is not supported on WIN64.
- * 
- * WIN64 longjmp() will do stack unwinding, and there is no standard way to
- * disable it. So this test will always fail on WIN64.
- */
-int main(int argc, char* argv[])
-{
-    (void)argc; (void)argv;
-    return 0;
-}
-
+    int call_on_stack__asm_setjmp(jmp_buf env);
+#   define call_on_stack__asm_longjmp  longjmp
 #else
+#   define call_on_stack__asm_setjmp   setjmp
+#   define call_on_stack__asm_longjmp  longjmp
+#endif
 
 static void* buffer = NULL;
 
 static void _callback(void* arg)
 {
-    longjmp(arg, 1);
+    call_on_stack__asm_longjmp(arg, 1);
 }
 
 int main(int argc, char* argv[])
@@ -36,7 +28,7 @@ int main(int argc, char* argv[])
     buffer = malloc(buffer_size);
 
     jmp_buf buf;
-    if (setjmp(buf) != 0)
+    if (call_on_stack__asm_setjmp(buf) != 0)
     {
         goto fin;
     }
@@ -50,5 +42,3 @@ fin:
     free(buffer);
     return 0;
 }
-
-#endif
