@@ -4,93 +4,68 @@
 .global call_on_stack__asm
 .type call_on_stack__asm,@function
 call_on_stack__asm:
-    mov     4(%esp),    %esi        /* save jmpbuf */
-    mov     8(%esp),    %edi        /* save longjmp() function pointer */
-    mov     12(%esp),   %eax        /* get user function */
-    mov     16(%esp),   %ecx        /* get user argument */
-    mov     %esi,       %esp        /* set stack pointer */
-    sub     $4,         %esp
-    push    %ecx                    /* build argument:arg */
-    call    *%eax                   /* func(arg) */
-    add     $4,         %esp
-    push    $1                      /* build argument:1 */
-    push    %esi                    /* build argument:jmp_buf */
-    call    *%edi
-
-.global call_on_stack__asm_setjmp
-.type call_on_stack__asm_setjmp,@function
-call_on_stack__asm_setjmp:
-    mov     4(%esp),    %eax
-    mov     %ebx,       (%eax)
-    mov     %esi,       4(%eax)
-    mov     %edi,       8(%eax)
-    mov     %ebp,       12(%eax)
-    lea     4(%esp),    %ecx
-    mov     %ecx,       16(%eax)
-    mov     (%esp),     %ecx
-    mov     %ecx,       20(%eax)
-    xor     %eax,       %eax
+    /* enter */
+    push    %ebp
+    mov     %esp,       %ebp
+    sub     $8,         %esp
+    /* backup callee saved registers */
+    push    %esi
+    push    %edi
+    /* backup esp and ebp */
+    mov     %esp,       %esi
+    mov     %ebp,       %edi
+    /* get func and arg */
+    mov     12(%ebp),   %eax
+    mov     16(%ebp),   %ecx
+    /* switch stack */
+    mov     8(%ebp),    %esp
+    mov     %esp,       %ebp
+    /* func(arg) */
+    push    %ecx
+    call    *%eax
+    /* restore stack */
+    mov     %esi,       %esp
+    mov     %edi,       %ebp
+    /* restore callee save registers */
+    pop     %edi
+    pop     %esi
+    /* leave */
+    leave
     ret
-
-.global call_on_stack__asm_longjmp
-.type call_on_stack__asm_longjmp,@function
-call_on_stack__asm_longjmp:
-    mov     4(%esp),    %edx
-    mov     8(%esp),    %eax
-    cmp     $1,         %eax
-    adc     $0,         %al
-    mov     (%edx),     %ebx
-    mov     4(%edx),    %esi
-    mov     8(%edx),    %edi
-    mov     12(%edx),   %ebp
-    mov     16(%edx),   %esp
-    jmp     *20(%edx)
 
 #elif defined(__x86_64__)
 
 .global call_on_stack__asm
 .type call_on_stack__asm,@function
 call_on_stack__asm:
-    mov     %rdi,       %r12        /* save jmp_buf */
-    mov     %rsi,       %r13        /* save longjmp() function pointer */
-    mov     %rdi,       %rsp        /* set stack pointer */
-    sub     $8,         %rsp
-    mov     %rcx,       %rdi        /* build argument:arg */
-    call    *%rdx                   /* func(arg) */
-    mov     %r12,       %rdi        /* build argument:jmp_buf */
-    mov     $1,         %rsi        /* build argument:1 */
-    call    *%r13                   /* longjmp(jmp_buf, 1) */
-
-.global call_on_stack__asm_setjmp
-.type call_on_stack__asm_setjmp,@function
-call_on_stack__asm_setjmp:
-    mov     %rbx,       (%rdi)         /* rdi is jmp_buf, move registers onto it */
-    mov     %rbp,       8(%rdi)
-    mov     %r12,       16(%rdi)
-    mov     %r13,       24(%rdi)
-    mov     %r14,       32(%rdi)
-    mov     %r15,       40(%rdi)
-    lea     8(%rsp),    %rdx        /* this is our rsp WITHOUT current ret addr */
-    mov     %rdx,       48(%rdi)
-    mov     (%rsp),     %rdx         /* save return addr ptr for new rip */
-    mov     %rdx,       56(%rdi)
-    xor     %eax,       %eax           /* always return 0 */
+    /* enter */
+    push    %rbp
+    mov     %rsp,       %rbp
+    sub     $32,        %rsp
+    mov     %rdi,       -8(%rbp)
+    mov     %rsi,       -16(%rbp)
+    mov     %rdx,       -24(%rbp)
+    /* backup callee saved registers */
+    push    %r12
+    push    %r13
+    /* backup rsp and rbp */
+    mov     %rsp,       %r12
+    mov     %rbp,       %r13
+    /* switch stack */
+    mov     %rdi,       %rsp
+    mov     %rsp,       %rbp
+    /* call func(arg) */
+    mov     %rdx,       %rdi
+    call    *%rsi
+    /* restore stack */
+    mov     %r12,       %rsp
+    mov     %r13,       %rbp
+    /* restore callee saved registers */
+    pop     %r13
+    pop     %r12
+    /* leave */
+    leave
     ret
-
-.global call_on_stack__asm_longjmp
-.type call_on_stack__asm_longjmp,@function
-call_on_stack__asm_longjmp:
-    xor     %eax,       %eax
-    cmp     $1,         %esi             /* CF = val ? 0 : 1 */
-    adc     %esi,       %eax           /* eax = val + !val */
-    mov     (%rdi),     %rbx         /* rdi is the jmp_buf, restore regs from it */
-    mov     8(%rdi),    %rbp
-    mov     16(%rdi),   %r12
-    mov     24(%rdi),   %r13
-    mov     32(%rdi),   %r14
-    mov     40(%rdi),   %r15
-    mov     48(%rdi),   %rsp
-    jmp     *56(%rdi)           /* goto saved address without altering rsp */
 
 #elif defined(__arm__)
 
@@ -98,30 +73,63 @@ call_on_stack__asm_longjmp:
 .global call_on_stack__asm
 .type call_on_stack__asm,%function
 call_on_stack__asm:
-    mov     r4,         r0          /* save jmp_buf */
-    mov     r5,         r1          /* save longjmp() function pointer */
-    mov     sp,         r0          /* set stack pointer */
-    sub     sp,         sp, #4
-    mov     r0,         r3          /* build argument: arg */
-    blx     r2                      /* func(arg) */
-    mov     r0,         r4          /* build argument: jmp_buf */
-    mov     r1,         #1          /* build argument: 1 */
-    bx      r5
+    /* enter */
+    push    { r7, lr }
+    sub     sp,         sp, #20
+    add     r7,         sp, #0
+    str     r0,         [r7, #12]
+    str     r1,         [r7, #8]
+    str     r2,         [r7, #4]
+    /* backup callee saved registers */
+    str     r4,         [r7, #16]
+    /* backup stack */
+    mov     r4,         sp
+    /* switch stack */
+    mov     sp,         r0
+    /* func(arg) */
+    mov     r0,         r2
+    blx     r1
+    /* restore stack */
+    mov     sp,         r4
+    /* restore callee saved registers */
+    ldr     r4,         [r7, #16]
+    /* leave */
+    adds    r7,         r7, #20
+    mov     sp,         r7
+    pop     { r7, pc }
 
 #elif defined(__aarch64__)
 
 .global call_on_stack__asm
 .type call_on_stack__asm,@function
 call_on_stack__asm:
-    mov     x19,        x0          /* save jmpbuf */
-    mov     x20,        x1          /* save longjmp() function pointer */
-    mov     sp,         x0          /* set stack pointer */
-    sub     sp,         sp, #8
-    mov     x0,         x3          /* build argument: arg */
-    blr     x2                      /* func(arg) */
-    mov     x0,         x19         /* build argument: jmpbuf */
-    mov     x1,         1           /* build argument:  1 */
-    br      x20                     /* longjmp(jmpbuf, 1) */
+    /* etner */
+    stp     x29, x30, [sp, -64]!
+    mov     x29,        sp
+    str     x0,         [sp, 40]
+    str     x1,         [sp, 32]
+    str     x2,         [sp, 24]
+    /* backup calledd saved registers */
+    str     x19,        [sp, 48]
+    str     x20,        [sp, 56]
+    /* backup stack */
+    mov     x19,        sp
+    mov     x20,        x29
+    /* switch stack */
+    mov     sp,         x0
+    mov     x29,        x0
+    /* func(arg) */
+    mov     x0,         x2
+    blr     x1
+    /* restore stack */
+    mov     sp,         x19
+    mov     x29,        x20
+    /* restore callee saved registers */
+    ldr     x19,        [sp, 48]
+    ldr     x20,        [sp, 56]
+    /* leave */
+    ldp     x29, x30, [sp], 64
+    ret
 
 #else
 #   error   "unsupport platform"

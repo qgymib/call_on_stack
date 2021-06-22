@@ -31,6 +31,18 @@ call_on_stack(buffer, sizeof(buffer), free, p);
 
 This code malloc a block of memory in one stack, and free it in another stack.
 
+
+
+## Limit
+
+You cannot use `setjmp()`/`longjmp()` in the callback, because `setjmp()` and `longjmp()` may check caller's stack for security purpose.
+
+On windows, the default implementation of `longjmp()` enable `SEH`, which is incompatible with user provided stack. Checkout [this post](https://blog.lazym.io/2020/09/21/Unicorn-Devblog-setjmp-longjmp-on-Windows/) for details.
+
+On linux, the glibc version of `longjmp()` check for environment that `setjmp()` provided, that means in most case it is fine to call `longjmp()` in callback. But if you chain-call `call_on_stack()` and try to jump to the first custom stack, you will get your program crashed.
+
+The solution is to implementation your own `setjmp()` and `longjmp()`, which only backup and restore callee-saved registers.
+
 ## Support architecture
 
 Currently support following architectures:

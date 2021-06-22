@@ -3,18 +3,32 @@
 _call_on_stack__asm   PROC
     push    ebp
     mov     ebp,    esp
-    mov     esi,    DWORD PTR 8[ebp]      ; save jmpbuf
-    mov     edi,    DWORD PTR 12[ebp]     ; save longjmp() function pointer
-    mov     eax,    DWORD PTR 16[ebp]     ; get user function
-    mov     ecx,    DWORD PTR 20[ebp]     ; get user argument
-    mov     esp,    esi                 ; set stack pointer
-    sub     esp,    4h
+    sub     esp,    8h
+    ; backup callee saved registers
+    push    esi
+    push    edi
+    ; backup stack
+    mov     esi,    esp
+    mov     edi,    ebp
+    ; get func and arg
+    mov     eax,    DWORD PTR 12[ebp]
+    mov     ecx,    DWORD PTR 16[ebp]
+    ; switch stack
+    mov     esp,    DWORD PTR 8[ebp]
+    mov     ebp,    esp
+    ; func(arg)
     push    ecx
     call    eax
-    add     esp,    4h
-    push    1
-    push    esi
-    call    edi
+    ; restore stack
+    mov     esp,    esi
+    mov     ebp,    edi
+    ; restore callee saved registers
+    pop     edi
+    pop     esi
+    ; leave
+    add     esp,    8h
+    pop     ebp
+    ret
 _call_on_stack__asm   ENDP
 
 END
